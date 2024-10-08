@@ -1,10 +1,9 @@
 # scrabble.py
-
 import itertools
 from wordscore import score_word
 
 def is_valid_word(word, rack):
-
+    """Checks if a word can be formed using the letters in the given rack."""
     rack_letters = list(rack)
     for letter in word:
         if letter in rack_letters:
@@ -17,34 +16,55 @@ def is_valid_word(word, rack):
             return False
     return True
 
-def run_scrabble(rack):
-    # Check for valid rack
+def generate_wildcard_replacements(word, wildcard_count):
+    """Generates words by replacing wildcards in the word with all letters A-Z."""
+    if wildcard_count == 0:
+        return [word]
 
+    letters = 'abcdefghijklmnopqrstuvwxyz'
+    replacements = set()
+    wildcards = [i for i, char in enumerate(word) if char in ('*', '?')]
+
+    for combination in itertools.product(letters, repeat=wildcard_count):
+        new_word = list(word)
+        for i, letter in zip(wildcards, combination):
+            new_word[i] = letter
+        replacements.add("".join(new_word))
+
+    return replacements
+
+def run_scrabble(rack):
+    """Main function that processes the rack and returns valid words and their scores."""
+    # Validate rack
     if not (2 <= len(rack) <= 7):
         return "Error: The rack must contain between 2 and 7 tiles."
     if any(char not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*?' for char in rack):
         return "Error: Invalid characters in the rack. Only A-Z, * and ? are allowed."
     if rack.count('*') > 1 or rack.count('?') > 1:
-        return "Error: Only one '*' and one '?' wildcard are allowed."、
-    
-    # Load from 'sowpods.txt'
+        return "Error: Only one '*' and one '?' wildcard are allowed."
+
+    # Load valid words from file
     try:
         with open("sowpods.txt", "r") as infile:
-            valid_words = [line.strip().upper() for line in infile]
+            valid_words = {line.strip().upper() for line in infile}
     except FileNotFoundError:
         return "Error: The 'sowpods.txt' file is missing."
 
+    # Process rack and generate words
     rack = rack.lower()
     letters = list(rack.replace('*', '').replace('?', ''))
     wildcard_count = rack.count('*') + rack.count('?')
 
+    # Generate all possible combinations and words using the rack
     possible_words = set()
     for length in range(2, len(letters) + wildcard_count + 1):
-        for combo in itertools.combinations_with_replacement(rack, length):
-            permutations = itertools.permutations(combo)
-            for perm in permutations:
+        for combo in itertools.combinations(rack, length):
+            for perm in itertools.permutations(combo):
                 word = ''.join(perm)
-                possible_words.add(word)
+                if wildcard_count > 0:
+                    possible_words.update(generate_wildcard_replacements(word, wildcard_count))
+                else:
+                    possible_words.add(word)
 
     valid_scores = []
     for word in possible_words:
@@ -54,5 +74,5 @@ def run_scrabble(rack):
             valid_scores.append((score, upper_word))
 
     valid_scores.sort(key=lambda x: (-x[0], x[1]))
-    
+
     return valid_scores, len(valid_scores)
