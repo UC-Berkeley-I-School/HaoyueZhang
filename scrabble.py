@@ -62,10 +62,12 @@ def run_scrabble(rack):
             for perm in itertools.permutations(combo):
                 word = ''.join(perm)
                 if wildcard_count > 0:
+                    # Replace wildcards and generate new words
                     possible_words.update(generate_wildcard_replacements(word, wildcard_count))
                 else:
                     possible_words.add(word)
 
+    # Check against valid words and calculate scores
     valid_scores = []
     for word in possible_words:
         upper_word = word.upper()
@@ -73,6 +75,7 @@ def run_scrabble(rack):
             score = score_word(word)
             valid_scores.append((score, upper_word))
 
+    # Sort the words by score and alphabetically
     valid_scores.sort(key=lambda x: (-x[0], x[1]))
 
     return valid_scores, len(valid_scores)
