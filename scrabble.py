@@ -1,4 +1,3 @@
-# scrabble.py
 
 import itertools
 from wordscore import score_word
