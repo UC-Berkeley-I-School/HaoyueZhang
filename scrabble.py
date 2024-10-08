@@ -1,3 +1,4 @@
+# scrabble.py
 
 import itertools
 from wordscore import score_word
@@ -17,14 +18,16 @@ def is_valid_word(word, rack):
     return True
 
 def run_scrabble(rack):
+    # Check for valid rack
 
     if not (2 <= len(rack) <= 7):
         return "Error: The rack must contain between 2 and 7 tiles."
     if any(char not in 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ*?' for char in rack):
         return "Error: Invalid characters in the rack. Only A-Z, * and ? are allowed."
     if rack.count('*') > 1 or rack.count('?') > 1:
-        return "Error: Only one '*' and one '?' wildcard are allowed."
-
+        return "Error: Only one '*' and one '?' wildcard are allowed."、
+    
+    # Load from 'sowpods.txt'
     try:
         with open("sowpods.txt", "r") as infile:
             valid_words = [line.strip().upper() for line in infile]
